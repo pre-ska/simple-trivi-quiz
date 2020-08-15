@@ -1,85 +1,75 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import Question from "./Question";
 import { loadQuestions } from "../helpers/QuestionsHelper";
 import HUD from "./HUD";
 import SaveScoreForm from "./SaveScoreForm";
 
-export default class Game extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      questions: null,
-      currentQuestion: null,
-      loading: true,
-      score: 0,
-      questionNumber: 0,
-      done: false
+const Game = ({ history }) => {
+  const [questions, setQuestions] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [score, setScore] = useState(0);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const getQuestions = async () => {
+      try {
+        const questions = await loadQuestions();
+        setQuestions(questions);
+      } catch (error) {
+        console.log(error);
+      }
     };
-  }
 
-  async componentDidMount() {
-    try {
-      const questions = await loadQuestions();
-      this.setState(
-        {
-          questions
-        },
-        () => this.changeQuestion()
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
+    getQuestions();
+  }, []);
 
-  changeQuestion = (bonus = 0) => {
-    if (this.state.questions.length === 0) {
-      return this.setState(prevState => ({
-        done: true,
-        score: prevState.score + bonus
-      }));
-    }
+  useEffect(() => {
+    if (!currentQuestion && questions.length) changeQuestion();
+  }, [questions]);
 
-    const randomQuestionIndex = Math.floor(
-      Math.random() * this.state.questions.length
-    );
-
-    const currentQuestion = this.state.questions[randomQuestionIndex];
-    const remainingQuestions = [...this.state.questions];
-    remainingQuestions.splice(randomQuestionIndex, 1);
-
-    this.setState(prevState => ({
-      questions: remainingQuestions,
-      currentQuestion,
-      loading: false,
-      score: prevState.score + bonus,
-      questionNumber: prevState.questionNumber + 1
-    }));
+  const scoreSaved = () => {
+    history.push("/");
   };
 
-  render() {
-    const {
-      loading,
-      done,
-      score,
-      currentQuestion,
-      questionNumber
-    } = this.state;
-    return (
-      <>
-        {loading && !done && <div id="loader"></div>}
+  const changeQuestion = (bonus = 0) => {
+    if (questions.length === 0) {
+      setDone(true);
+      setScore(score + bonus);
+      return;
+    }
 
-        {!loading && !done && currentQuestion && (
-          <>
-            <HUD score={score} questionNumber={questionNumber} />
-            <Question
-              question={currentQuestion}
-              changeQuestion={this.changeQuestion}
-            />
-          </>
-        )}
+    const randomQuestionIndex = Math.floor(Math.random() * questions.length);
 
-        {done && <SaveScoreForm score={score} />}
-      </>
-    );
-  }
-}
+    const currentQuestion = questions[randomQuestionIndex];
+    const remainingQuestions = [...questions];
+    remainingQuestions.splice(randomQuestionIndex, 1);
+
+    setQuestions(remainingQuestions);
+    setCurrentQuestion(currentQuestion);
+    setLoading(false);
+    setScore(score + bonus);
+    setQuestionNumber(questionNumber + 1);
+  };
+
+  return (
+    <>
+      {loading && !done && <div id="loader"></div>}
+
+      {!loading && !done && currentQuestion && (
+        <>
+          <HUD score={score} questionNumber={questionNumber} />
+          <Question
+            question={currentQuestion}
+            changeQuestion={changeQuestion}
+          />
+        </>
+      )}
+
+      {done && <SaveScoreForm score={score} scoreSaved={scoreSaved} />}
+    </>
+  );
+};
+
+export default Game;

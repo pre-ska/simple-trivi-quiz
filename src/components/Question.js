@@ -28,7 +28,6 @@ const Question = ({ question, changeQuestion }) => {
       {question.answerChoices.map((choice, index) => (
         <div
           key={index}
-          className="choice-container"
           className={`choice-container ${
             selectedAnswer === index && classToApply
           }`}
