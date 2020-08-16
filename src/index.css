@@ -101,7 +101,8 @@ input::placeholder {
 
 /* GAME/QUESTION */
 
-.choice-container {
+.choice-container,
+.highScoreContainer {
   display: flex;
   margin-bottom: 0.5rem;
   width: 100%;

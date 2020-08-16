@@ -38,10 +38,16 @@ const HighScores = () => {
           <h1>High scores</h1>
           <div id="highScoresList">
             {scores.map(record => (
+              <div key={record.key} className="highScoreContainer">
+                <p className="choice-prefix">{record.score}</p>
+                <p className="choice-text">{record.name}</p>
+              </div>
+            ))}
+            {/* {scores.map(record => (
               <li key={record.key} className="high-score">
                 {record.name} - {record.score}
               </li>
-            ))}
+            ))} */}
           </div>
         </>
       )}
